@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Inicio</title>
+    <link rel="stylesheet" href="inicio/styless.css">
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <script>
+      // Inicialización del SDK de Facebook
+      window.fbAsyncInit = function() {
+          FB.init({
+              appId: '824951679639133', // Reemplaza con tu appId
+              autoLogAppEvents: true,
+              xfbml: true,
+              version: 'v21.0'
+          });
+          FB.AppEvents.logPageView();  
+      };
+      (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+
+      
+      window.onload = function () {
+        FB.getLoginStatus(function(response) {
+          statusChangeCallback(response);
+        });
+      };
+        
+      function statusChangeCallback(response) {
+        console.log('Login status:', response);
+      
+        if (response.status === 'connected') {
+          // El usuario está conectado y ha iniciado sesión en tu aplicación
+          const userID = response.authResponse.userID;
+          const accessToken = response.authResponse.accessToken;
+      
+          console.log('Usuario conectado con ID:', userID);
+          console.log('Access Token:', accessToken);
+          // Redirige al usuario a la experiencia de tu app
+          window.location.href = '/app-logged-in';
+        } else if (response.status === 'not_authorized') {
+          // El usuario está conectado a Facebook pero no a tu app
+          console.log('Usuario no autorizado en la app.');
+          // Mostrar el botón de inicio de sesión
+          showLoginButton();
+        } else {
+          // Usuario no conectado a Facebook o sesión cerrada
+          console.log('Usuario no conectado.');
+          // Mostrar el botón de inicio de sesión
+          showLoginButton();
+        }
+      }
+      function showLoginButton() {
+        document.getElementById('loginButton').style.display = 'block';
+      }
+      
+      
+      
+      // Manejar el evento de mensajes de sesión
+      window.addEventListener('message', (event) => {
+          if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") return;
+          try {
+              const data = JSON.parse(event.data);
+              if (data.type === 'WA_EMBEDDED_SIGNUP') {
+                  console.log('Evento de mensaje recibido: ', data); // Remueve para producción
+                  // Agregar lógica personalizada aquí
+              }
+          } catch {
+              console.log('Datos del evento: ', event.data); // Remueve para producción
+              // Agregar lógica personalizada aquí
+          }
+      });
+
+      // Callback para el inicio de sesión
+      const fbLoginCallback = (response) => {
+          if (response.authResponse) {
+              const code = response.authResponse.code;
+              console.log('Respuesta de inicio de sesión: ', code); // Remueve para producción
+              // Agregar lógica personalizada aquí
+          } else {
+              console.log('Error en la respuesta: ', response); // Remueve para producción
+              // Agregar lógica personalizada aquí
+          }
+      };
+
+      // Método para lanzar el registro embebido de WhatsApp
+      
+      const launchWhatsAppSignup = () => {
+        FB.login(fbLoginCallback, {
+            config_id: '517700577931165', // Aquí va el identificador correcto
+            response_type: 'code',
+            override_default_response_type: true,
+            extras: {
+                setup: {},
+                featureType: '',
+                sessionInfoVersion: '3',
+            }
+        });
+    };
+    
+    </script>
+</head>
+<body>
+    <h1>Bienvenido a la Página de Inicio</h1>
+    <p>Selecciona a continuación para registrarte como nuestro socio</p>
+    <div id="loginButton" style="display:none;">
+      <button onclick="launchWhatsAppSignup()" style="background-color: #1877f2; border: 0; border-radius: 4px; color: #fff; cursor: pointer; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; height: 40px; padding: 0 24px;">Login con Facebook</button>
+      </div>
+    <div>
+      <h3>Crear campañas</h3>
+   
+      <h3>Crear plantillas</h3>
+    
+      <h3>Crear flujos</h3>
+    </div>
+    <!-- Botón para iniciar registro embebido -->
+    
+</body>
+</html>
