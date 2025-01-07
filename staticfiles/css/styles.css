@@ -1,0 +1,8 @@
+.button-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  #login-button {
+    display: none; /* Inicialmente ocultamos el botón */
+  }
