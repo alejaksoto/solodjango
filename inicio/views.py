@@ -19,7 +19,7 @@ def embedded_callback(request):
         return HttpResponse("Callback de registro embebido desconocido.")
 
 def index(request):
-    return HttpResponse("Welcome Developer")
+    return render(request, 'inicio/index.html')
 
 def whatsapp_verify(request):
     try:
