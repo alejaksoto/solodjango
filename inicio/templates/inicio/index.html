@@ -4,132 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página de Inicio</title>
-    <link rel="stylesheet" href="/proyecto_django/static/css/styles.css">
+    <!--  <link rel="stylesheet" href="../css/styles.css">-->
+    <link rel="stylesheet" href="static/inicio/css/styles.css">
+    
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-    <script>
-      // Inicialización del SDK de Facebook
-      window.fbAsyncInit = function() {
-          FB.init({
-              appId: '824951679639133', // Reemplaza con tu appId
-              autoLogAppEvents: true,
-              xfbml: true,
-              version: 'v21.0'
-          });
-          FB.AppEvents.logPageView();  
-      };
-      (function(d, s, id){
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) {return;}
-        js = d.createElement(s); js.id = id;
-        js.src = "https://connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-      }(document, 'script', 'facebook-jssdk'));
-
-      
-      window.onload = function () {
-        FB.getLoginStatus(function(response) {
-          statusChangeCallback(response);
-        });
-      };
-        
-      function statusChangeCallback(response) {
-        console.log('Login status:', response);
-      
-        if (response.status === 'connected') {
-          // El usuario está conectado y ha iniciado sesión en tu aplicación
-          const userID = response.authResponse.userID;
-          const accessToken = response.authResponse.accessToken;
-      
-          console.log('Usuario conectado con ID:', userID);
-          console.log('Access Token:', accessToken);
-          // Redirige al usuario a la experiencia de tu app
-          window.location.href = '/app-logged-in';
-        } else if (response.status === 'not_authorized') {
-          // El usuario está conectado a Facebook pero no a tu app
-          console.log('Usuario no autorizado en la app.');
-          // Mostrar el botón de inicio de sesión
-          showLoginButton();
-        } else {
-          // Usuario no conectado a Facebook o sesión cerrada
-          console.log('Usuario no conectado.');
-          // Mostrar el botón de inicio de sesión
-          showLoginButton();
-        }
-      }
-      function showLoginButton() {
-        document.getElementById('loginButton').style.display = 'block';
-      }
-      
-      
-      
-      // Manejar el evento de mensajes de sesión
-      window.addEventListener('message', (event) => {
-          if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") return;
-          try {
-              const data = JSON.parse(event.data);
-              if (data.type === 'WA_EMBEDDED_SIGNUP') {
-                  console.log('Evento de mensaje recibido: ', data); // Remueve para producción
-                  // Agregar lógica personalizada aquí
-              }
-          } catch {
-              console.log('Datos del evento: ', event.data); // Remueve para producción
-              // Agregar lógica personalizada aquí
-          }
-      });
-
-      // Callback para el inicio de sesión
-      const fbLoginCallback = (response) => {
-          if (response.authResponse) {
-              const code = response.authResponse.code;
-              console.log('Respuesta de inicio de sesión: ', code); // Remueve para producción
-              // Agregar lógica personalizada aquí
-          } else {
-              console.log('Error en la respuesta: ', response); // Remueve para producción
-              // Agregar lógica personalizada aquí
-          }
-      };
-
-      // Método para lanzar el registro embebido de WhatsApp
-      
-      const launchWhatsAppSignup = () => {
-        FB.login(fbLoginCallback, {
-            config_id: '517700577931165', // Aquí va el identificador correcto
-            response_type: 'code',
-            override_default_response_type: true,
-            extras: {
-                setup: {},
-                featureType: '',
-                sessionInfoVersion: '3',
-            }
-        });
-    };
     
-    </script>
-    <script src="{% static 'facebook.js' %}"></script>
-</head>
+    </head>
 <body>
-  <header class="header">
-    <div class="logo">Claro <span class="highlight">empresas</span></div>
-    <h1>Bienvenido a Claro Empresas</h1>
-    <nav class="nav">
-        <a href="#" class="nav-link">whatsapp</a>
-        <a href="#" class="nav-link">Facebook</a>
-        <a href="#" class="nav-link">Instragram</a>
-        <a href="/inicio/templates/inicio/index.html" class="nav-link">Iniciar sesion</a>
-    </nav>
-  </header>
-    <p>Selecciona a continuación para registrarte como nuestro socio</p>
-    <div id="loginButton" style="display:none;">
-      <button onclick="launchWhatsAppSignup()" style="background-color: #1877f2; border: 0; border-radius: 4px; color: #fff; cursor: pointer; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; height: 40px; padding: 0 24px;">Login con Facebook</button>
+      
+    <header class="header">
+      <div class="logo">Claro <span class="highlight">empresas</span></div>
+      <h1>Bienvenido a Claro Empresas</h1>
+      <nav class="nav">
+          <a href="#" class="nav-link">whatsapp</a>
+          <a href="#" class="nav-link">Facebook</a>
+          <a href="#" class="nav-link">Instragram</a>
+          <a href="login"  class="nav-link">Iniciar sesion</a>
+      </nav>
+    </header>
+  
+    <!-- Publicidad -->
+    <section class="banner">
+      <img src="static/inicio/img/publicidad.jpg" alt="Publicidad" class="banner-img">
+      
+  </section>
+
+  <!-- Opciones de soporte -->
+  <section class="support-options">
+      <h2 class="section-title">¿En qué podemos apoyarlo hoy?</h2>
+      <div class="options-container">
+          <div class="option-card">
+              <img src="factura-icon.png" alt="Factura" class="option-icon">
+              <h3>Pague su Factura</h3>
+              <p>Consulte y realice el pago en línea de los servicios de su negocio.</p>
+              <button class="option-button">Pague sus servicios Claro</button>
+          </div>
+          <div class="option-card">
+              <img src="servicios-icon.png" alt="Servicios" class="option-icon">
+              <h3>Servicios para su negocio</h3>
+              <p>Déjenos sus datos y lo llamamos.</p>
+              <button class="option-button">Nosotros lo llamamos</button>
+          </div>
+          <div class="option-card">
+              <img src="chat-icon.png" alt="Chat de servicio" class="option-icon">
+              <h3>Chat de servicio</h3>
+              <p>Aquí podrá encontrar soporte para sus servicios.</p>
+              <button class="option-button">Chatee con nosotros</button>
+          </div>
+          <div class="option-card">
+              <img src="blog-icon.png" alt="Blog" class="option-icon">
+              <h3>Blog Servicios</h3>
+              <p>Documentación sobre los servicios adquiridos.</p>
+              <button class="option-button">Entérese ahora</button>
+          </div>
       </div>
-    <div>
-      <h3>Crear campañas</h3>
-   
-      <h3>Crear plantillas</h3>
-    
-      <h3>Crear flujos</h3>
-    </div>
-    <!-- Botón para iniciar registro embebido -->
-    
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+      <div class="footer-section">
+          <h4>Politicas</h4>
+          <ul>
+              <li><a href="#">Politica de tratamiento de datos</a></li>
+              <li><a href="#">Politica de privacidad</a></li>
+              <li><a href="#">Habeas Data</a></li>
+          </ul>
+      </div>
+      <div class="footer-section">
+          <h4>Ubicación</h4>
+          <p> Centro Comercial Plaza Claro, Cra. 68a #24 B-10 Torre 1 Local 1, Bogotá</p>
+      </div>
+  </footer>
+    <script src="static/inicio/js/index.js"></script>    
 </body>
 </html>
