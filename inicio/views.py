@@ -34,8 +34,8 @@ def embedded_callback(request):
         return HttpResponse("Error interno del servidor.", status=500)
 
 
-def index(request):
-    return render(request, 'inicio/index.html')
+def login(request):
+    return render(request, 'inicio/login.html')
 
 def whatsapp_verify(request):
     try:
