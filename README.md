@@ -14,3 +14,5 @@ python manage.py startapp inicio
 python manage.py runserver
 -- se debe ejecutar este comando cuando se realice modificaciones dentro de settings
 python manage.py migrate
+--comando para ver los paquetes instalados
+py -m pip freeze
