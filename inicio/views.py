@@ -149,7 +149,7 @@ def whatsapp_message_handler(request):
             response_text = f"Recibimos tu mensaje: '{text}'"
 
             # Enviar respuesta (simulado)
-            send_response_message(number, response_text)
+            send_message_view(number, response_text)
 
             return JsonResponse({"status": "EVENT_RECEIVED"}, status=200)
 
