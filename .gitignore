@@ -1,2 +1,4 @@
 env/
 errors.log
+*.pyc
+__pycache__/
