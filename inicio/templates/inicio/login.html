@@ -1,31 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Página de Inicio</title>
-    <link rel="stylesheet" href="../static/css/styles.css">
-    
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>    
+    <link rel="stylesheet" href="../static/css/styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      async
+      defer
+      crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js"
+    ></script>
     <script src="../static/js/login.js"></script>
-</head>
-<body>
-  <header class="header">
-    <div class="logo">Claro <span class="highlight">empresas</span></div>
-    <h1>Bienvenido a Claro Empresas</h1>
-    <nav class="nav">
-        <a href="#" class="nav-link">whatsapp</a>
-        <a href="#" class="nav-link">Facebook</a>
-        <a href="#" class="nav-link">Instragram</a>
-    </nav>
-  </header>
-    <p>Selecciona a continuación para registrarte como nuestro socio</p>
-    <div id="loginButton" style="">
-      <button onclick="launchWhatsAppSignup()" style="background-color: #1877f2; border: 0; border-radius: 4px; color: #fff; cursor: pointer; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; height: 40px; padding: 0 24px;">Login con Facebook</button>
-      </div>
-    
-    <!-- Botón para iniciar registro embebido -->
-    
+  </head>
+  <body>
+    <header
+      class="flex text-sm justify-between items-center h-12 w-full text-white py-2.5 px-5 fixed top-0 z-10"
+      style="background-color: #444"
+    >
+      <figure class="flex justify-center items-center">
+        <img
+          class="w-8 h-auto object-contain"
+          src="https://www.claro.com.co/portal/co/recursos_tema/assets/vector/logo-claro-blanco.svg"
+          alt="Claro Logo"
+        />
+      </figure>
 
-</body>
+      <h1 class="text-base font-bold">Bienvenido a Claro Empresas</h1>
+      <nav class="flex text-xs justify-end gap-4">
+        <a href="#">Whatsapp</a>
+        <a href="#">Facebook</a>
+        <a href="#">Instragram</a>
+        <a href="login">Iniciar sesion</a>
+      </nav>
+    </header>
+    <div class="w-full flex flex-col fixed top-16 z-11 items-center justify-center">
+      <p class="text-xs p-6">
+        Selecciona a continuación para registrarte como nuestro socio
+      </p>
+      <div id="loginButton" style="">
+        <button
+          onclick="launchWhatsAppSignup()"
+          style="
+            background-color: #1877f2;
+            border: 0;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            height: 40px;
+            padding: 0 24px;
+          "
+        >
+          Login con Facebook
+        </button>
+      </div>
+    </div>
+
+    <!-- Botón para iniciar registro embebido -->
+  </body>
 </html>
