@@ -16,3 +16,5 @@ python manage.py runserver
 python manage.py migrate
 --comando para ver los paquetes instalados
 py -m pip freeze
+--comando para instalar los paquetes necesarios
+pip install -r requirements.txt
