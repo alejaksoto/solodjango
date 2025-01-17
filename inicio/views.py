@@ -7,14 +7,15 @@ from rest_framework import generics, status
 from inicio.serializers import PlantillaMensajeSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
-from .models import PlantillaMensaje
+from .models import PlantillaMensaje , Empresa
 from .permissions import EsAdminOStaffConPermiso  # Import the permission class
 from .utils import validar_plantilla, send_welcome_message
 from django.views.decorators.csrf import csrf_exempt
 import requests
 
 logger = logging.getLogger(__name__)
-WHATSAPP_API_TOKEN ="7850AHMCUMROS792O012092928391" 
+API_TOKEN ="7850AHMCUMROS792O012092928391" 
+appId: '824951679639133'
 # Vista para renderizar la página principal
 # Devuelve la plantilla de la página de inicio o un error en caso de fallo.
 def home(request):
@@ -200,7 +201,7 @@ def whatsapp_webhook(request):
                                             "text": {"body": "¡Hola! Bienvenido a nuestro servicio de pruebas de WhatsApp."}
                                         },
                                         headers={
-                                            "Authorization": f"Bearer {WHATSAPP_API_TOKEN}",
+                                            "Authorization": f"Bearer {API_TOKEN}",
                                             "Content-Type": "application/json"
                                         }
                                     )
@@ -257,35 +258,29 @@ def send_message_view(request):
 def register_company(request):
     if request.method == "POST":
         try:
-            # Decodificar el JSON del cuerpo de la solicitud
             body = json.loads(request.body)
             company_name = body.get("companyName")
             webhook_url = body.get("webhookUrl")
             phone_number = body.get("phoneNumber")
+            client_id = body.get("clientId")  # Nuevo parámetro
+            client_secret = body.get("clientSecret")  # Nuevo parámetro
 
-            # Validar que se reciban todos los datos necesarios
-            if not company_name or not webhook_url or not phone_number:
-                return JsonResponse({"error": "Faltan datos requeridos (companyName, webhookUrl o phoneNumber)."}, status=400)
+            if not company_name or not webhook_url or not phone_number or not client_id or not client_secret:
+                return JsonResponse({"error": "Faltan datos requeridos (companyName, webhookUrl, phoneNumber, clientId o clientSecret)."}, status=400)
 
-            # Variables de entorno (reemplaza con tus propios valores o usa variables del entorno)
-            phone_id = "453659504504003"
-            api_token = "EAANFZBZCrASAQBO1zPtE901EkRoDNOU6Rfya7IEJUdJevjmD9b..."
+            # Crear o actualizar el registro en el modelo
+            empresa, creado = Empresa.objects.update_or_create(
+                nombre=company_name,
+                defaults={
+                    'telefono': phone_number,
+                    'client_id': client_id,
+                    'client_secret': client_secret,
+                }
+            )
 
-            if not phone_id or not api_token:
-                return JsonResponse({"error": "No se configuraron correctamente las credenciales para el API de WhatsApp."}, status=500)
+            message = f"La empresa '{company_name}' fue {'registrada' if creado else 'actualizada'} exitosamente."
+            return JsonResponse({"message": message}, status=200)
 
-            # Llamar a la función de envío de mensaje
-            message_response = send_welcome_message(phone_number, phone_id, api_token)
-
-            if message_response["success"]:
-                return JsonResponse({
-                    "message": f"La empresa '{company_name}' fue registrada exitosamente y el mensaje de bienvenida fue enviado."
-                }, status=200)
-            else:
-                return JsonResponse({
-                    "error": "La empresa fue registrada, pero hubo un error al enviar el mensaje de bienvenida.",
-                    "details": message_response["error"]
-                }, status=500)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Formato de JSON inválido."}, status=400)
         except Exception as e:
@@ -293,3 +288,170 @@ def register_company(request):
             return JsonResponse({"error": "Ocurrió un error en el servidor."}, status=500)
     else:
         return JsonResponse({"error": "Método no permitido."}, status=405)
+    
+    
+# Vista para obtener el token del cliente
+def exchange_token(request):
+    code = request.GET.get('code')  # Código obtenido del login embebido
+    company_name = request.GET.get('companyName')  # Nombre de la empresa
+
+    if not code or not company_name:
+        return JsonResponse({'error': 'Los parámetros "code" y "companyName" son obligatorios.'}, status=400)
+
+    # Obtener la empresa
+    try:
+        empresa = Empresa.objects.get(nombre=company_name)
+    except Empresa.DoesNotExist:
+        return JsonResponse({'error': f"No se encontró la empresa '{company_name}'."}, status=404)
+
+    # Validar que la empresa tenga client_id y client_secret
+    if not empresa.client_id or not empresa.client_secret:
+        return JsonResponse({'error': 'La empresa no tiene configurados "client_id" o "client_secret".'}, status=400)
+
+    url = 'https://graph.facebook.com/v21.0/oauth/access_token'
+    params = {
+        'client_id': empresa.client_id,
+        'client_secret': empresa.client_secret,
+        'code': code,
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        data = response.json()
+        business_token = data.get('access_token')
+
+        # Actualizar el token en la base de datos
+        empresa.access_token = business_token
+        empresa.save()
+
+        return JsonResponse({
+            'message': f"Token actualizado para la empresa '{company_name}'.",
+            'business_token': business_token
+        })
+    else:
+        return JsonResponse({'error': response.json()}, status=response.status_code)
+
+
+# Vista para suscibir el webhoohk
+def subscribe_to_webhooks(request):
+    business_token = request.GET.get('business_token')  # Token del negocio
+    waba_id = request.GET.get('waba_id')  # ID de la cuenta WABA
+
+    if not business_token or not waba_id:
+        return JsonResponse({'error': 'Se requieren "business_token" y "waba_id".'}, status=400)
+
+    url = f'https://graph.facebook.com/v21.0/{waba_id}/subscribed_apps'
+    headers = {
+        'Authorization': f'Bearer {business_token}',
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 200:
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'error': response.json()}, status=response.status_code)
+
+
+# Vista para registrar un número de teléfono del cliente en mi bd
+def register_phone_number(request):
+    access_token = request.GET.get('access_token')  # Token del negocio
+    phone_number_id = request.GET.get('phone_number_id')  # ID del número de teléfono
+    pin = request.GET.get('pin')  # PIN deseado
+    company_name = request.GET.get('companyName')  # Nombre de la empresa asociada
+
+    if not access_token or not phone_number_id or not pin or not company_name:
+        return JsonResponse({'error': 'Se requieren "access_token", "phone_number_id", "pin" y "companyName".'}, status=400)
+
+    url = f'https://graph.facebook.com/v21.0/{phone_number_id}/register'
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+    }
+    payload = {
+        'messaging_product': 'whatsapp',
+        'pin': pin,
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+    if response.status_code == 200:
+        # Guardar el número de teléfono en el modelo Empresa
+        empresa, creado = Empresa.objects.update_or_create(
+            nombre=company_name,
+            defaults={'telefono': phone_number_id}
+        )
+
+        return JsonResponse({
+            'message': f"El número de teléfono fue registrado para la empresa '{company_name}'."
+        })
+    else:
+        return JsonResponse({'error': response.json()}, status=response.status_code)
+
+# Vista para obtener datos del cliente
+def obtener_datos_cliente(request):
+
+    business_token = request.GET.get('access_token')
+    if not business_token:
+        return JsonResponse({'error': 'El parámetro "access_token" es obligatorio.'}, status=400)
+
+    # Endpoint para obtener datos del cliente
+    url = 'https://graph.facebook.com/v21.0/me'
+    headers = {
+        'Authorization': f'Bearer {business_token}',
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        whatsapp_id = data.get('id')
+        nombre = data.get('name')
+        email = data.get('email')  # Solo si está disponible
+
+        # Guarda los datos en el modelo
+        cliente, creado = Empresa.objects.get_or_create(
+            whatsapp_id=whatsapp_id,
+            defaults={
+                'nombre': nombre,
+                'email': email,
+                'access_token': business_token,
+            },
+        )
+
+        if not creado:
+            cliente.access_token = business_token
+            cliente.save()
+
+        return JsonResponse({'success': True, 'cliente': {
+            'nombre': cliente.nombre,
+            'email': cliente.email,
+            'whatsapp_id': cliente.whatsapp_id,
+        }})
+    else:
+        return JsonResponse({'error': response.json()}, status=response.status_code)
+
+#data adicional de los datos cliente 
+@csrf_exempt
+def guardar_datos_adicionales(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        telefono = body.get('telefono')
+        direccion = body.get('direccion')
+        whatsapp_id = body.get('whatsapp_id')  # Obtén el ID del cliente del frontend o de la sesión
+
+        if not whatsapp_id:
+            return JsonResponse({'error': 'El "whatsapp_id" es obligatorio.'}, status=400)
+
+        # Actualiza el cliente
+        try:
+            cliente = Empresa.objects.get(whatsapp_id=whatsapp_id)
+            cliente.telefono = telefono
+            cliente.direccion = direccion
+            cliente.save()
+            return JsonResponse({'success': True})
+        except Empresa.DoesNotExist:
+            return JsonResponse({'error': 'Cliente no encontrado.'}, status=404)
+    else:
+        return JsonResponse({'error': 'Método no permitido.'}, status=405)
